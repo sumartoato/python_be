@@ -2,6 +2,9 @@
 from datetime import datetime
 import platform
 from fastapi import APIRouter
+from sqlalchemy import text
+from app.core.database import engine
+
 router = APIRouter(
     prefix="/health",
     tags=["Health Check"]
@@ -31,3 +34,24 @@ def ping():
     return {
         "message": "pong"
     }
+
+@router.get("/db")
+def health_db():
+
+    try:
+
+        with engine.connect() as conn:
+
+            result = conn.execute(text("SELECT NOW()"))
+
+            return {
+                "status": "Connected",
+                "server_time": str(result.scalar())
+            }
+
+    except Exception as ex:
+
+        return {
+            "status": "Disconnected",
+            "message": str(ex)
+        }
